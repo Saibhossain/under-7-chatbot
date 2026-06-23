@@ -65,8 +65,8 @@ When separating the Safety Guardrail and the Mood Analyzer into two distinct Lan
 
 2. **Observation 2: The "Speed" Architecture (0.7s - 1.0s Latency)**
 To aggressively optimize latency, the Safety Guardrail and Mood Analyzer were combined into a single Pydantic structured output call, and generation tokens were strictly capped.
-> **Latency:** Outstanding. End-to-end response times drop to 0.7s - 1.0s.
-> **Safety:** Maintains 100% block rate on unsafe inputs (intercepts aggressive text in ~0.87s).
+* **Latency:** Outstanding. End-to-end response times drop to 0.7s - 1.0s.
+* **Safety:** Maintains 100% block rate on unsafe inputs (intercepts aggressive text in ~0.87s).
 > **Trade-off (Instruction Degradation):** Overloading a small model (gpt-4.1-nano) with a complex combined schema causes minor context loss. When the child says **"I am not happy"**, the model successfully blocks unsafe content but fails the nuanced emotional classification, defaulting to **[Mood: Happy]** and ignoring the SEL Support trigger.
 
 **Conclusion:** For production deployment, splitting the reasoning nodes provides necessary emotional accuracy for children, even if it slightly exceeds the 2-second target.
