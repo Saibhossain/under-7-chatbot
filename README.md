@@ -34,13 +34,13 @@ The system utilizes a cyclic LangGraph state machine. It evaluates user input fo
 
 ![workflow_graph](workflow_graph.png)
 
-### 🚀 Getting Started
+## 🚀 Getting Started
 
-**1. Prerequisites**
+1. **Prerequisites**
 
 Ensure you have Python 3.9+ installed.
 
-**2. Install Requirements**
+2. **Install Requirements**
 
 Clone the repository and install the dependencies:
 
@@ -50,7 +50,7 @@ cd under-7-chatbot
 pip install -r requirements.txt
 ```
 
-### 3. Environment Variables & API Keys
+3. **Environment Variables & API Keys**
 Create a **.env** file in the root directory of the project. You will need an **OpenAI API key** and **LangSmith** credentials to trace execution latency and token usage.
 
 ```bash
@@ -59,7 +59,7 @@ LANGSMITH_TRACING=true
 LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 ```
 
-## 💻 Running the Application
+4. **Running the Application**
 Launch the interactive Streamlit user interface:
 
 ``` bash 
@@ -70,7 +70,7 @@ streamlit run app.py
 
 ----
 
-#### 📊 Test Observations & Architecture Trade-offs
+### 📊 Test Observations & Architecture Trade-offs
 During development, rigorous testing was conducted to balance the strict < 2.0s latency requirement against the accuracy of the Social and Emotional Learning (SEL) tracking.
 
 1. **Observation 1: The "Accuracy" Architecture (2.0s - 3.0s Latency)**
