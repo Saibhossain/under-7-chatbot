@@ -1,5 +1,6 @@
 # 🧸 Magic English Companion: AI Tutor for Children
 
+# Project Title: AI-Powered English Learning Chatbot for Children (Under 7 Years Old)
 An ultra-fast, stateful AI chatbot designed to teach English to children under 7 years old. Built with **LangGraph**, **LangChain**, and **Streamlit**, this project features dynamic Social and Emotional Learning (SEL), strict content guardrails, and persistent memory tracking.
 
 ## Project Directory
