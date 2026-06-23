@@ -2,7 +2,22 @@
 
 An ultra-fast, stateful AI chatbot designed to teach English to children under 7 years old. Built with **LangGraph**, **LangChain**, and **Streamlit**, this project features dynamic Social and Emotional Learning (SEL), strict content guardrails, and persistent memory tracking.
 
-**Author:** MD Saib Hossain
+## Project Directory
+```bash 
+under-7-chatbot/
+│
+├── app.py                 # Streamlit UI Layer (Clean & Centered)
+├── chat.py                # latency 1-2s code 
+├── config.py              # Model initialization
+├── requirements.txt       # Dependencies
+└── src/
+    ├── __init__.py
+    ├── state.py           # TypedDict schema
+    ├── safety.py          # Safety checks
+    ├── nodes.py           # Core logic nodes
+    └── graph.py           # Compiled LangGraph Workflow with Checkpointer
+
+```
 
 ## 🌟 Core Features
 * **Progressive Learning System:** Automatically tracks and adjusts between 3 learning levels (L1: Phonics/Letters, L2: Vocabulary, L3: Simple Sentences).
