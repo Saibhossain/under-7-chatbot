@@ -32,7 +32,18 @@ under-7-chatbot/
 
 The system utilizes a cyclic LangGraph state machine. It evaluates user input for safety and mood simultaneously, routes to the appropriate generation node, and saves the interaction state.
 
-![workflow_graph](workflow_graph.png)
+<table>
+  <tr>
+    <td align="center">
+      <img src="workflow_graph1.png" width="400"><br>
+      Figure 1: Workflow Graph 1
+    </td>
+    <td align="center">
+      <img src="workflow_graph2.png" width="400"><br>
+      Figure 2: Workflow Graph 2
+    </td>
+  </tr>
+</table>
 
 ## 🚀 Getting Started
 
