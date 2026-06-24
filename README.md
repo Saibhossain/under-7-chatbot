@@ -85,12 +85,14 @@ streamlit run app.py
 During development, rigorous testing was conducted to balance the strict < 2.0s latency requirement against the accuracy of the Social and Emotional Learning (SEL) tracking.
 
 1. **Observation 1: The "Accuracy" Architecture (2.0s - 3.0s Latency)** (Figure 1)
+
 When separating the Safety Guardrail and the Mood Analyzer into two distinct LangGraph nodes, the LLM reasoning is nearly perfect.
 * **Safety:** Successfully catches aggressive prompts (blocks swearing immediately).
 > **SEL Accuracy:** When the child says "I am not happy", the system perfectly switches to [Mode: Support] and [Mood: Sad], providing a comforting response.
 * **Trade-off:** End-to-end latency averages 2.3s to 3.5s due to sequential API network round-trips.
 
 2. **Observation 2 : The "Speed" Architecture (0.7s - 1.0s Latency)** (Figure 2)
+
 To aggressively optimize latency, the Safety Guardrail and Mood Analyzer were combined into a single Pydantic structured output call, and generation tokens were strictly capped.
 * **Latency:** Outstanding. End-to-end response times drop to 0.7s - 1.0s.
 * **Safety:** Maintains 100% block rate on unsafe inputs (intercepts aggressive text in ~0.87s).
