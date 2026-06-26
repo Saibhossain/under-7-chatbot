@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver  # Added MemorySaver
+from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -197,12 +197,12 @@ builder.add_edge("output_guard", END)
 memory_checkpointer = MemorySaver()
 compiled_bot = builder.compile(checkpointer=memory_checkpointer)
 
-try:
-    with open("workflow_graph.png", "wb") as f:
-        f.write(compiled_bot.get_graph().draw_mermaid_png())
-    print("Graph saved successfully as 'workflow_graph.png'")
-except Exception as e:
-    print(class_name := type(e).__name__, f": {e}")
+# try:
+#     with open("workflow_graph.png", "wb") as f:
+#         f.write(compiled_bot.get_graph().draw_mermaid_png())
+#     print("Graph saved successfully as 'workflow_graph.png'")
+# except Exception as e:
+#     print(class_name := type(e).__name__, f": {e}")
 
 # ==========================================
 # 7. VERIFICATION INTERACTIVE LOOP
