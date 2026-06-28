@@ -24,9 +24,16 @@ def init_db():
             active_topic TEXT NOT NULL DEFAULT 'General English',
             mood TEXT NOT NULL DEFAULT 'Happy',
             override_active INTEGER NOT NULL DEFAULT 0, -- 1 if manually overridden by parent
+            thread_name TEXT NOT NULL DEFAULT 'New Session',
             created_at TEXT NOT NULL
         )
     """)
+    
+    # Run migrations for existing sessions
+    try:
+        cursor.execute("ALTER TABLE sessions ADD COLUMN thread_name TEXT NOT NULL DEFAULT 'New Session'")
+    except sqlite3.OperationalError:
+        pass
     
     # Create chat_logs table
     cursor.execute("""
@@ -40,6 +47,8 @@ def init_db():
             level_at_turn TEXT, -- Level configuration when the message was sent
             mode_at_turn TEXT, -- Mode configuration when the message was sent
             topic_at_turn TEXT, -- Topic configuration when the message was sent
+            tools_used TEXT, -- Tools utilized (e.g., 'RAG', 'WebSearch', 'None')
+            agent_name TEXT, -- Agent generating the response (e.g., 'LearningChatbotAgent')
             bg_evaluated INTEGER NOT NULL DEFAULT 0, -- 0 = pending, 1 = analyzed
             evaluated_level TEXT, -- Level computed by background LLM
             evaluated_mode TEXT, -- Mode computed by background LLM
@@ -49,6 +58,16 @@ def init_db():
         )
     """)
     
+    # Run migrations for existing DB
+    try:
+        cursor.execute("ALTER TABLE chat_logs ADD COLUMN tools_used TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE chat_logs ADD COLUMN agent_name TEXT")
+    except sqlite3.OperationalError:
+        pass
+        
     conn.commit()
     conn.close()
 
@@ -56,10 +75,11 @@ def create_session(session_id, current_level='L1', current_mode='Conversation', 
     """Create a new chat session in the database if it doesn't already exist."""
     conn = get_connection()
     cursor = conn.cursor()
+    thread_name = f"Session {session_id[:4]} - {active_topic}"
     try:
         cursor.execute(
-            "INSERT OR IGNORE INTO sessions (session_id, current_level, current_mode, active_topic, mood, override_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (session_id, current_level, current_mode, active_topic, 'Happy', 0, datetime.now().isoformat())
+            "INSERT OR IGNORE INTO sessions (session_id, current_level, current_mode, active_topic, mood, override_active, thread_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (session_id, current_level, current_mode, active_topic, 'Happy', 0, thread_name, datetime.now().isoformat())
         )
         conn.commit()
     finally:
@@ -87,7 +107,7 @@ def get_all_sessions():
     finally:
         conn.close()
 
-def update_session_bg_eval(session_id, level=None, mode=None, mood=None):
+def update_session_bg_eval(session_id, level=None, mode=None, mood=None, active_topic=None):
     """Updates active session settings computed in background. Will NOT override if parent override is active."""
     conn = get_connection()
     cursor = conn.cursor()
@@ -96,7 +116,7 @@ def update_session_bg_eval(session_id, level=None, mode=None, mood=None):
         cursor.execute("SELECT override_active FROM sessions WHERE session_id = ?", (session_id,))
         row = cursor.fetchone()
         if row and row['override_active'] == 1:
-            # Skip updating level/mode but update mood
+            # Skip updating level/mode/topic but update mood
             if mood:
                 cursor.execute("UPDATE sessions SET mood = ? WHERE session_id = ?", (mood, session_id))
         else:
@@ -112,6 +132,12 @@ def update_session_bg_eval(session_id, level=None, mode=None, mood=None):
             if mood:
                 updates.append("mood = ?")
                 params.append(mood)
+            if active_topic:
+                updates.append("active_topic = ?")
+                params.append(active_topic)
+                # Also update thread_name to match new topic
+                updates.append("thread_name = ?")
+                params.append(f"Session {session_id[:4]} - {active_topic}")
             
             if updates:
                 params.append(session_id)
@@ -136,6 +162,9 @@ def update_session_parent_settings(session_id, level=None, mode=None, active_top
         if active_topic is not None:
             updates.append("active_topic = ?")
             params.append(active_topic)
+            # Also update thread_name
+            updates.append("thread_name = ?")
+            params.append(f"Session {session_id[:4]} - {active_topic}")
         if override_active is not None:
             updates.append("override_active = ?")
             params.append(override_active)
@@ -147,16 +176,16 @@ def update_session_parent_settings(session_id, level=None, mode=None, active_top
     finally:
         conn.close()
 
-def log_chat_message(session_id, role, content, latency=None, level_at_turn=None, mode_at_turn=None, topic_at_turn=None):
+def log_chat_message(session_id, role, content, latency=None, level_at_turn=None, mode_at_turn=None, topic_at_turn=None, tools_used=None, agent_name=None):
     """Log a child/tutor message in the database. Returns the row ID of the inserted message."""
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
             """INSERT INTO chat_logs 
-               (session_id, role, content, timestamp, latency, level_at_turn, mode_at_turn, topic_at_turn, bg_evaluated) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)""",
-            (session_id, role, content, datetime.now().isoformat(), latency, level_at_turn, mode_at_turn, topic_at_turn)
+               (session_id, role, content, timestamp, latency, level_at_turn, mode_at_turn, topic_at_turn, tools_used, agent_name, bg_evaluated) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""",
+            (session_id, role, content, datetime.now().isoformat(), latency, level_at_turn, mode_at_turn, topic_at_turn, tools_used, agent_name)
         )
         conn.commit()
         return cursor.lastrowid

@@ -12,7 +12,7 @@ from db import update_chat_message_bg_eval, update_session_bg_eval
 load_dotenv()
 
 # Model Config
-MODEL_NAME = os.getenv("MODEL", "gpt-4o-mini-2024-07-18")
+MODEL_NAME = os.getenv("MODEL", "gpt-4o-mini")
 
 # Optimize LLM parameters for speed and cost
 # Chat LLM: capped tokens and temperature for responsive conversational outputs

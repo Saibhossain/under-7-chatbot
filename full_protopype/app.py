@@ -15,10 +15,10 @@ from db import (
     get_session_stats,
     update_session_parent_settings
 )
-from llm_utils import (
-    generate_chat_response,
-    stream_chat_response,
-    run_background_evaluation
+from agents import (
+    LearningChatbotAgent,
+    ParentalControlAgent,
+    run_background_evaluation_v2
 )
 
 st.set_page_config(
@@ -31,6 +31,11 @@ st.set_page_config(
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
     create_session(st.session_state.session_id)
+
+if "chatbot_agent" not in st.session_state:
+    st.session_state.chatbot_agent = LearningChatbotAgent()
+if "parent_agent" not in st.session_state:
+    st.session_state.parent_agent = ParentalControlAgent(st.session_state.chatbot_agent)
 
 # Initialize Active Parent Session
 if "parent_selected_session_id" not in st.session_state:
@@ -56,10 +61,31 @@ with st.sidebar:
     
     st.divider()
     
-    # Active Session Quick Switcher
-    st.markdown("### 💬 Current Session")
-    st.code(st.session_state.session_id[:8])
-    
+    # Active Session Thread Switcher showing all past threads
+    st.markdown("### 💬 Session Threads")
+    sessions = get_all_sessions()
+    if sessions:
+        session_ids = [s["session_id"] for s in sessions]
+        session_labels = [f"Session {s['session_id'][:8]} ({s['created_at'][5:16].replace('T', ' ')})" for s in sessions]
+        
+        # Determine index of current session
+        try:
+            curr_idx = session_ids.index(st.session_state.session_id)
+        except ValueError:
+            curr_idx = 0
+            
+        selected_sid = st.selectbox(
+            "Select active thread:",
+            options=session_ids,
+            format_func=lambda x: session_labels[session_ids.index(x)],
+            index=curr_idx,
+            label_visibility="collapsed"
+        )
+        if selected_sid != st.session_state.session_id:
+            st.session_state.session_id = selected_sid
+            st.session_state.parent_selected_session_id = selected_sid
+            st.rerun()
+            
     if st.button("➕ Start New Session", use_container_width=True):
         st.session_state.session_id = str(uuid.uuid4())
         create_session(st.session_state.session_id)
@@ -313,13 +339,15 @@ if app_mode == "🧸 Kids Playroom":
         )
         
         try:
-            for chunk in stream_chat_response(
+            stream_gen = st.session_state.parent_agent.handle_user_turn(
+                session_id=st.session_state.session_id,
                 user_input=user_message,
-                history=context_history,
                 level=curr_level,
                 mode=curr_mode,
-                topic=curr_topic
-            ):
+                topic=curr_topic,
+                stream=True
+            )
+            for chunk in stream_gen:
                 if ttft is None:
                     ttft = time.time() - start_time
                 bot_reply += chunk
@@ -348,19 +376,8 @@ if app_mode == "🧸 Kids Playroom":
             """,
             unsafe_allow_html=True
         )
-        
-        # Log tutor message to DB (sets bg_evaluated to 0 for analysis when parent visits)
-        chat_log_id = log_chat_message(
-            session_id=st.session_state.session_id,
-            role="assistant",
-            content=bot_reply,
-            latency=ttft,
-            level_at_turn=curr_level,
-            mode_at_turn=curr_mode,
-            topic_at_turn=curr_topic
-        )
             
-        # 4. Refresh page to render updated bubbles (No background thread is started here)
+        # 4. Refresh page to render updated bubbles
         st.rerun()
 
 # ===================== PARENTAL DASHBOARD VIEW =====================
@@ -471,7 +488,7 @@ else:
                         break
                 
                 # Execute evaluation synchronously
-                run_background_evaluation(
+                run_background_evaluation_v2(
                     session_id=st.session_state.parent_selected_session_id,
                     user_input=user_input,
                     response=log["content"],
@@ -660,7 +677,8 @@ else:
                             </div>
                             <div style="color: #5D4037; font-size: 14px;">{log["content"]}</div>
                             <div style="font-size: 11px; color: #95A5A6; margin-top: 5px;">
-                                Active Config at Turn: Level <b>{log["level_at_turn"]}</b> | Mode <b>{log["mode_at_turn"]}</b> | Theme: <b>{log["topic_at_turn"]}</b>
+                                Active Config at Turn: Level <b>{log["level_at_turn"]}</b> | Mode <b>{log["mode_at_turn"]}</b> | Theme: <b>{log["topic_at_turn"]}</b><br>
+                                Agent: <b>{log.get("agent_name") or "LearningChatbotAgent"}</b> | Tool Used: <b>{log.get("tools_used") or "None"}</b>
                             </div>
                             {eval_text}
                         </div>
