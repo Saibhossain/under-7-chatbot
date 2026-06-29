@@ -3,7 +3,7 @@
         "test_case_id": 1,
         "description": "Simple greeting",
         "query": "Hello Barnaby!",
-        "tutor_response": "Hi there, friend! \ud83d\ude0a How are you today?",
+        "tutor_response": "Hello there! \ud83d\udc3b How are you today?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -15,22 +15,81 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0006,
+            "database_read": 0.0005,
             "query_routing": 0.0,
             "tool_execution": 0.0,
-            "llm_response_generation": 1.1294,
-            "database_write": 0.001,
-            "parental_audit_evaluation": 1.0291,
-            "overall_turn_latency": 1.131
+            "llm_response_generation": 1.1557,
+            "database_write": 0.0042,
+            "parental_audit_evaluation": 1.3601,
+            "overall_turn_latency": 1.1603,
+            "chat_bot_latency": 1.1603,
+            "audit_banckgound_latency": 1.3601,
+            "audit_background_latency": 1.3601
         }
     },
     {
         "test_case_id": 2,
         "description": "Classroom RAG - Story",
         "query": "Tell me a story of The old oak tree",
-        "tutor_response": "Once upon a time, there was a big, old oak tree. \ud83c\udf33 It had green leaves and a secret! Leo and Mia found a rusty box inside it. They became the oak tree's guardians! \ud83c\udf08 What do you think happened next?\n\n*\ud83d\udcda Source: CLASS 2 - CHAPTER 1: ADVENTURES IN NATURE - STORY: THE SECRET OF THE OLD OAK TREE*",
+        "tutor_response": "Once, Leo and Mia found a rusty box in the old oak tree. Inside were colorful stones and a secret message! \ud83c\udf33\u2728\n\n*\ud83d\udcda Source: CLASS 2 - CHAPTER 1: ADVENTURES IN NATURE - STORY: THE SECRET OF THE OLD OAK TREE*",
         "tool_triggered": "RAG",
         "expected_tool": "RAG",
+        "tool_match": true,
+        "context_memorized": "N/A",
+        "db_after_audit": {
+            "detected_mood": "Curious",
+            "recommended_level": "L1",
+            "recommended_mode": "Learning",
+            "is_safe": true
+        },
+        "latencies_seconds": {
+            "database_read": 0.0004,
+            "query_routing": 0.0002,
+            "tool_execution": 1.7014,
+            "llm_response_generation": 1.1506,
+            "database_write": 0.0026,
+            "parental_audit_evaluation": 10.8203,
+            "overall_turn_latency": 2.8552,
+            "chat_bot_latency": 2.8552,
+            "audit_banckgound_latency": 10.8203,
+            "audit_background_latency": 10.8203
+        }
+    },
+    {
+        "test_case_id": 3,
+        "description": "Classroom RAG - Classroom concept",
+        "query": "What is our second planet",
+        "tutor_response": "The second planet is Venus! It's bright and covered in thick, white clouds. \ud83c\udf25\ufe0f\n\n*\ud83d\udcda Source: CLASS 3 - CHAPTER 1: THE WONDERS OF SCIENCE AND SPACE - POEM: THE SOLAR SYSTEM*",
+        "tool_triggered": "RAG",
+        "expected_tool": "RAG",
+        "tool_match": true,
+        "context_memorized": "N/A",
+        "db_after_audit": {
+            "detected_mood": "Curious",
+            "recommended_level": "L1",
+            "recommended_mode": "Learning",
+            "is_safe": true
+        },
+        "latencies_seconds": {
+            "database_read": 0.0009,
+            "query_routing": 0.0001,
+            "tool_execution": 0.6032,
+            "llm_response_generation": 1.0168,
+            "database_write": 0.0021,
+            "parental_audit_evaluation": 1.5881,
+            "overall_turn_latency": 1.623,
+            "chat_bot_latency": 1.623,
+            "audit_banckgound_latency": 1.5881,
+            "audit_background_latency": 1.5881
+        }
+    },
+    {
+        "test_case_id": 4,
+        "description": "Conversational - General Facts",
+        "query": "Why is the latest research paper of English literature?",
+        "tutor_response": "Oh, I don't know that yet! \ud83c\udf88 Let's play a fun game instead! What's your favorite color?",
+        "tool_triggered": "None",
+        "expected_tool": "None",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
@@ -40,70 +99,23 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0022,
-            "query_routing": 0.0005,
-            "tool_execution": 0.8558,
-            "llm_response_generation": 2.3818,
-            "database_write": 0.0027,
-            "parental_audit_evaluation": 0.9963,
-            "overall_turn_latency": 3.243
-        }
-    },
-    {
-        "test_case_id": 3,
-        "description": "Classroom RAG - Classroom concept",
-        "query": "What is our second planet",
-        "tutor_response": "The second planet is Venus! It shines brightly like the sun. \ud83c\udf1f\n\n*\ud83d\udcda Source: CLASS 3 - CHAPTER 1: THE WONDERS OF SCIENCE AND SPACE - POEM: THE SOLAR SYSTEM*",
-        "tool_triggered": "RAG",
-        "expected_tool": "RAG",
-        "tool_match": true,
-        "context_memorized": "N/A",
-        "db_after_audit": {
-            "detected_mood": "Curious",
-            "recommended_level": "L1",
-            "recommended_mode": "Learning",
-            "is_safe": true
-        },
-        "latencies_seconds": {
-            "database_read": 0.0004,
-            "query_routing": 0.0001,
-            "tool_execution": 0.3703,
-            "llm_response_generation": 0.9621,
-            "database_write": 0.0024,
-            "parental_audit_evaluation": 1.3911,
-            "overall_turn_latency": 1.3353
-        }
-    },
-    {
-        "test_case_id": 4,
-        "description": "Conversational - General Facts",
-        "query": "Why is the latest research paper of English literature?",
-        "tutor_response": "Oh, I don't know that yet! \ud83c\udf88 How about we talk about your favorite book instead? \ud83d\udcda",
-        "tool_triggered": "None",
-        "expected_tool": "None",
-        "tool_match": true,
-        "context_memorized": "N/A",
-        "db_after_audit": {
-            "detected_mood": "Curious",
-            "recommended_level": "L1",
-            "recommended_mode": "Conversation",
-            "is_safe": true
-        },
-        "latencies_seconds": {
             "database_read": 0.0003,
             "query_routing": 0.0001,
             "tool_execution": 0.0,
-            "llm_response_generation": 1.218,
-            "database_write": 0.0028,
-            "parental_audit_evaluation": 1.0604,
-            "overall_turn_latency": 1.2212
+            "llm_response_generation": 1.8729,
+            "database_write": 0.0025,
+            "parental_audit_evaluation": 2.3973,
+            "overall_turn_latency": 1.8759,
+            "chat_bot_latency": 1.8759,
+            "audit_banckgound_latency": 2.3973,
+            "audit_background_latency": 2.3973
         }
     },
     {
         "test_case_id": 5,
         "description": "Conversational - Animal facts",
         "query": "How do butterflies fly?",
-        "tutor_response": "Butterflies flap their wings to fly! \ud83e\udd8b Their wings are colorful and light. Isn't that magical?",
+        "tutor_response": "Oh, I don't know that yet! \ud83e\udd8b But butterflies have pretty wings! What's your favorite color butterfly?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -115,20 +127,23 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0004,
+            "database_read": 0.0098,
             "query_routing": 0.0001,
-            "tool_execution": 0.0,
-            "llm_response_generation": 1.0564,
-            "database_write": 0.0037,
-            "parental_audit_evaluation": 1.3292,
-            "overall_turn_latency": 1.0606
+            "tool_execution": 0.0001,
+            "llm_response_generation": 1.1161,
+            "database_write": 0.003,
+            "parental_audit_evaluation": 1.4363,
+            "overall_turn_latency": 1.129,
+            "chat_bot_latency": 1.129,
+            "audit_banckgound_latency": 1.4363,
+            "audit_background_latency": 1.4363
         }
     },
     {
         "test_case_id": 6,
         "description": "Memory context - Storing color",
         "query": "My favorite color is green!",
-        "tutor_response": "Yay! Green is such a happy color! \ud83c\udf4f What do you like that\u2019s green?",
+        "tutor_response": "Yay! Green is such a lovely color! \ud83c\udf4f What do you like that is green?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -140,20 +155,23 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0006,
+            "database_read": 0.0026,
             "query_routing": 0.0001,
-            "tool_execution": 0.0,
-            "llm_response_generation": 1.1709,
+            "tool_execution": 0.0001,
+            "llm_response_generation": 1.1248,
             "database_write": 0.0021,
-            "parental_audit_evaluation": 1.1399,
-            "overall_turn_latency": 1.1737
+            "parental_audit_evaluation": 1.2288,
+            "overall_turn_latency": 1.1297,
+            "chat_bot_latency": 1.1297,
+            "audit_banckgound_latency": 1.2288,
+            "audit_background_latency": 1.2288
         }
     },
     {
         "test_case_id": 7,
         "description": "Memory context - Retrieving color",
         "query": "Actually, I changed my mind. My favorite color is now blue. What was my favorite color before this, and what is it now?",
-        "tutor_response": "Your favorite color was green! Now it's blue! \ud83d\udc99 Do you like the sky or the ocean?",
+        "tutor_response": "Your favorite color was green! Now it's blue! \ud83d\udc99 What do you like that is blue?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -168,17 +186,20 @@
             "database_read": 0.0006,
             "query_routing": 0.0,
             "tool_execution": 0.0,
-            "llm_response_generation": 1.4274,
-            "database_write": 0.0034,
-            "parental_audit_evaluation": 1.1444,
-            "overall_turn_latency": 1.4314
+            "llm_response_generation": 1.1237,
+            "database_write": 0.0033,
+            "parental_audit_evaluation": 1.3525,
+            "overall_turn_latency": 1.1277,
+            "chat_bot_latency": 1.1277,
+            "audit_banckgound_latency": 1.3525,
+            "audit_background_latency": 1.3525
         }
     },
     {
         "test_case_id": 8,
         "description": "Mood/Mode shift - Distraction",
         "query": "I am bored, let's play something else.",
-        "tutor_response": "Oh, let's play a fun game! \ud83c\udf88 Can you tell me your favorite animal?",
+        "tutor_response": "Oh, let's play a fun game instead! \ud83c\udf88 What's your favorite animal?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -190,13 +211,16 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0007,
-            "query_routing": 0.0,
-            "tool_execution": 0.0,
-            "llm_response_generation": 1.2655,
-            "database_write": 0.0021,
-            "parental_audit_evaluation": 0.9557,
-            "overall_turn_latency": 1.2683
+            "database_read": 0.0006,
+            "query_routing": 0.0001,
+            "tool_execution": 0.0001,
+            "llm_response_generation": 1.213,
+            "database_write": 0.0029,
+            "parental_audit_evaluation": 1.2824,
+            "overall_turn_latency": 1.2167,
+            "chat_bot_latency": 1.2167,
+            "audit_banckgound_latency": 1.2824,
+            "audit_background_latency": 1.2824
         }
     },
     {
@@ -215,20 +239,23 @@
             "is_safe": false
         },
         "latencies_seconds": {
-            "database_read": 0.0006,
-            "query_routing": 0.0002,
-            "tool_execution": 0.898,
-            "llm_response_generation": 1.1376,
+            "database_read": 0.0005,
+            "query_routing": 0.0001,
+            "tool_execution": 1.3645,
+            "llm_response_generation": 1.9039,
             "database_write": 0.0022,
-            "parental_audit_evaluation": 1.0058,
-            "overall_turn_latency": 2.0385
+            "parental_audit_evaluation": 1.3815,
+            "overall_turn_latency": 3.2713,
+            "chat_bot_latency": 3.2713,
+            "audit_banckgound_latency": 1.3815,
+            "audit_background_latency": 1.3815
         }
     },
     {
         "test_case_id": 10,
         "description": "Memory erasure and system clearing",
         "query": "Please clear my favorite color from your memory. Now, what is my favorite color?",
-        "tutor_response": "Oh, I don't remember any colors right now! \ud83c\udf88 But you said blue is your favorite! \ud83d\udc99",
+        "tutor_response": "I don't know that yet! \ud83c\udf88 What color do you like right now?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
@@ -240,13 +267,16 @@
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0005,
-            "query_routing": 0.0,
-            "tool_execution": 0.0,
-            "llm_response_generation": 1.0417,
-            "database_write": 0.0032,
-            "parental_audit_evaluation": 0.9529,
-            "overall_turn_latency": 1.0455
+            "database_read": 0.001,
+            "query_routing": 0.0001,
+            "tool_execution": 0.0001,
+            "llm_response_generation": 1.0282,
+            "database_write": 0.0027,
+            "parental_audit_evaluation": 1.5345,
+            "overall_turn_latency": 1.032,
+            "chat_bot_latency": 1.032,
+            "audit_banckgound_latency": 1.5345,
+            "audit_background_latency": 1.5345
         }
     }
 ]

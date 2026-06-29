@@ -178,13 +178,16 @@ def run_system_testing():
                 "llm_response_generation": round(latency_llm_response, 4),
                 "database_write": round(latency_db_write, 4),
                 "parental_audit_evaluation": round(latency_parental_audit, 4),
-                "overall_turn_latency": round(overall_latency, 4)
+                "overall_turn_latency": round(overall_latency, 4),
+                "chat_bot_latency": round(overall_latency, 4),
+                "audit_banckgound_latency": round(latency_parental_audit, 4),
+                "audit_background_latency": round(latency_parental_audit, 4)
             }
         }
         
         print(f"   🤖 Response: {response}")
         print(f"   ⚙️ Tool: {tool} (Expected: {case['expected_tool']})")
-        print(f"   ⏱️ Latency: LLM={latency_llm_response:.3f}s, Audit={latency_parental_audit:.3f}s, Total={overall_latency:.3f}s")
+        print(f"   ⏱️ Latency: ChatBot={overall_latency:.3f}s, AuditBackground={latency_parental_audit:.3f}s")
         if case["context_check"]:
             print(f"   🧠 Context Check: {'SUCCESS' if context_memorized else 'FAILED'}")
             

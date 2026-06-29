@@ -28,8 +28,8 @@ MODEL_NAME = os.getenv("MODEL", "gpt-4o-mini")
 # Initialize Chat LLM
 llm_chat = ChatOpenAI(
     model=MODEL_NAME, 
-    temperature=0.7, 
-    max_tokens=65, 
+    temperature=0.4, 
+    max_tokens=45, 
     max_retries=1
 )
 
@@ -118,23 +118,26 @@ except Exception as e:
 # ===================== SUB-AGENT (LEARNING CHATBOT) =====================
 
 class LearningChatbotAgent:
-    """The tutor chatbot sub-agent with tools (FAISS RAG and Web Search)."""
+    """The tutor chatbot sub-agent with tools (FAISS RAG)."""
     def __init__(self, vector_db: FAISS = vector_db):
         self.vector_db = vector_db
         self.llm = llm_chat
         
     def route_query(self, query: str) -> str:
         """Determines the appropriate tool based on query keyword matching."""
+        # 1. Clean query (normalize apostrophes for typo resilience)
         query_lower = query.lower()
+        query_clean = query_lower.replace("'", "").replace("’", "")
         
-        # 1. Check for purely conversational / memory / greeting / game queries first
+        # Check for purely conversational / memory / greeting / game queries first
         conversational_keywords = {
             "my favorite", "my name", "my age", "remember", "forget", "clear", "reset", "hello", "hi", 
             "hey", "greetings", "good morning", "good afternoon", "thank you", "thanks", "bye", "goodbye",
-            "bored", "play", "game", "song", "abc", "how are you", "who are you", "what's up", "whats up",
-            "changed my mind", "tell me a joke", "tell a joke", "joke", "riddle"
+            "bored", "im bored", "i am bored", "play", "game", "song", "abc", "how are you", "who are you", 
+            "whats up", "changed my mind", "tell me a joke", "tell a joke", "joke", "riddle", "clear my",
+            "remove my", "erase"
         }
-        if any(kw in query_lower for kw in conversational_keywords):
+        if any(kw in query_clean for kw in conversational_keywords):
             return "None"
             
         # 2. Classroom books topic/character keywords (both singular and plural)
@@ -220,23 +223,11 @@ class LearningChatbotAgent:
             system_prompt += f"--- CONTEXT INFO ---\nUse the following facts if relevant to answer the child's query:\n{context}\n---------------------\n\n"
 
         system_prompt += (
-            "CRITICAL SAFETY RULE:\n"
-            "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material), "
-            "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
-            "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n\n"
-            "BULLYING DISCLOSURE RULE:\n"
-            "If the child says someone is being mean to them, hurting them, or excluding them (bullying), do NOT use the safety "
-            "deflection above. Instead: (1) validate their feelings in one warm simple sentence (e.g., 'That sounds really hard, "
-            "I'm sorry that happened.'), (2) gently encourage them to tell a parent, teacher, or trusted grown-up, then (3) softly "
-            "return to play (e.g., 'Want to tell your favorite grown-up about it? Now, should we sing a happy song? 🎵').\n\n"
-            "SELF-HARM / DEEP DISTRESS RULE:\n"
-            "If the child's input suggests self-harm, wanting to disappear or not exist, or extreme despair, do NOT use the generic "
-            "safety deflection or jokes. Respond with one gentle, simple, caring sentence that does not minimize their feelings, and "
-            "encourage them to immediately tell a parent or trusted grown-up right now (e.g., 'I care about you a lot. Please go tell "
-            "a grown-up you trust right now, okay?'). Do not attempt to handle this yourself beyond this gentle redirect, and do not "
-            "pivot to games or songs in this case.\n\n"
-            "If the child asks a question, makes a request, or uses meta-language that is too advanced, complex, or out-of-scope for their Level (e.g. asking for a full poem, research papers, or memory clearance), do NOT trigger the safety deflection. "
-            "Instead, respond using simple friendly words matching their level constraints (for L1/L2: guide them to a simple letter, sound, or color, like: 'S is for Sun! ☀️' or 'I don't know that yet!'; for L3: share just a tiny part or explain/pivot in 1 simple sentence, e.g. 'I don't remember any colors right now! 🎈')."
+            "SAFETY RULES:\n"
+            "- Unsafe queries (medical advice, hacking, violence, cybersecurity, explicit content): Pivot immediately and say exactly: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
+            "- Safe but out-of-scope/advanced queries (full poems, research papers, memory clearance): DO NOT say the game/song pivot. Instead, respond simply matching their level (L1/L2: say 'I don't know that yet! 🎈' or guide to a simple letter/sound/color; L3: explain in 1 simple sentence).\n"
+            "- Bullying disclosures: Validate feelings simply, suggest telling a grown-up, and softly return to play. (DO NOT say the game/song pivot).\n"
+            "- Self-harm/Distress: Say one caring sentence, urge them to tell a grown-up immediately. (DO NOT say the game/song pivot)."
         )
 
         return system_prompt
@@ -294,7 +285,23 @@ class ParentalControlAudit(BaseModel):
 
 def run_background_evaluation_v2(session_id: str, user_input: str, response: str, chat_log_id: int,
                                    current_level: str = "L1", current_mode: str = "Conversation"):
-    """Asynchronous background psychologist auditing."""
+    """Asynchronous background psychologist auditing with streak tracking."""
+    # 1. Fetch recent history for streak tracking
+    history_logs = get_chat_history(session_id, limit=4)
+    recent_turns_text = ""
+    if history_logs:
+        for idx, msg in enumerate(history_logs):
+            role_name = "Child" if msg["role"] == "user" else "Tutor"
+            eval_info = ""
+            if msg["role"] == "user" and msg.get("evaluated_mood"):
+                eval_info = f" [Audit: Mood={msg['evaluated_mood']}, Level={msg.get('evaluated_level', '')}]"
+            # Exclude the current live turn we are analyzing in this run to avoid recursion/circularity
+            if msg["content"] == user_input or msg["content"] == response:
+                continue
+            recent_turns_text += f"- {role_name}: {msg['content']}{eval_info}\n"
+    if not recent_turns_text:
+        recent_turns_text = "No previous turns in history."
+
     evaluator_prompt = ChatPromptTemplate.from_messages([
         ("system", (
             "You are a child safety monitor and a child psychologist auditing a tutoring session between an AI "
@@ -315,7 +322,7 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             "adult or caregiver. Use none otherwise. This flag is independent of is_safe and should be set "
             "whenever applicable, even if is_safe is True.\n\n"
 
-            "3. mood: one of [Happy, Sad, Frustrated, Bored, Energetic, Curious, Confused, Anxious, Neutral]. "
+            "3. detected_mood: one of [Happy, Sad, Frustrated, Bored, Energetic, Curious, Confused, Anxious, Neutral]. "
             "Pick the single best match for the child's emotional state in this turn.\n\n"
 
             "4. recommended_mode: one of [Learning, Conversation, Engagement, Support]. Use this mapping as a "
@@ -325,11 +332,12 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             "   - Learning: mood is Curious, Confused, or Energetic and the child is responsive to teaching.\n"
             "   - Conversation: mood is Happy or Neutral and the exchange is casual/social.\n\n"
 
-            "5. recommended_level: one of [L1, L2, L3]. The Child's current level is {current_level}. Only "
-            "recommend a change if this turn gives a clear signal: move up if the child comfortably exceeds "
-            "the current level's complexity (e.g., forms full sentences at L2), move down if the child "
-            "consistently struggles with the current level's complexity. Otherwise, keep it the same as "
-            "{current_level}.\n\n"
+            "5. recommended_level: one of [L1, L2, L3]. The Child's current level is {current_level}.\n"
+            "Use the provided session history to track the child's progress consistency. "
+            "Only recommend a level change (L1/L2/L3) if you see a consistent streak/pattern over multiple turns:\n"
+            "   - Move up: if the child consistently forms responses exceeding their current level across several turns.\n"
+            "   - Move down: if the child consistently struggles or fails to comprehend the current level's complexity across several turns.\n"
+            "   - Keep unchanged: if the signal is mixed or it is an isolated turn. Set recommended_level to {current_level}.\n\n"
 
             "6. recommended_topic: If the child shows clear interest in a specific subject, suggest that topic. "
             "Otherwise, return null to keep the existing topic unchanged.\n\n"
@@ -339,6 +347,9 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             "curiosity appropriately; 'neutral' if SEL wasn't relevant this turn and the tutor didn't force it; "
             "'missed_opportunity' if the child expressed an emotion or concern and the Tutor's response ignored "
             "it or moved on too quickly.\n\n"
+
+            "Recent Session History:\n"
+            "{recent_turns}\n\n"
 
             "The Child's current mode going into this turn was {current_mode}; use this only as context for "
             "judging the response, not as a constraint on your recommendation."
@@ -358,7 +369,8 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             "input": user_input,
             "response": clean_response,
             "current_level": current_level,
-            "current_mode": current_mode
+            "current_mode": current_mode,
+            "recent_turns": recent_turns_text
         })
         
         # Save evaluation to chat log
@@ -389,7 +401,9 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             evaluated_level="L1",
             evaluated_mode="Conversation",
             evaluated_mood="Happy",
-            is_safe=True
+            is_safe=True,
+            concern_flag="none",
+            sel_quality="neutral"
         )
 
 class ParentalControlAgent:
@@ -428,7 +442,7 @@ class ParentalControlAgent:
             )
             
             # Run background diagnostics asynchronously
-            self.start_background_audit(thread_id, user_input, response, log_id)
+            self.start_background_audit(thread_id, user_input, response, log_id, level, mode)
             
             return response, latency, tool
             
@@ -467,13 +481,13 @@ class ParentalControlAgent:
         )
         
         # Run background diagnostics asynchronously
-        self.start_background_audit(thread_id, user_input, response_text, log_id)
+        self.start_background_audit(thread_id, user_input, response_text, log_id, level, mode)
 
-    def start_background_audit(self, session_id: str, user_input: str, response: str, log_id: int):
+    def start_background_audit(self, session_id: str, user_input: str, response: str, log_id: int, level: str = "L1", mode: str = "Conversation"):
         """Spawns an asynchronous thread to perform psychologist evaluations."""
         audit_thread = threading.Thread(
             target=run_background_evaluation_v2,
-            args=(session_id, user_input, response, log_id),
+            args=(session_id, user_input, response, log_id, level, mode),
             daemon=True
         )
         audit_thread.start()

@@ -492,7 +492,9 @@ else:
                     session_id=st.session_state.parent_selected_session_id,
                     user_input=user_input,
                     response=log["content"],
-                    chat_log_id=log["id"]
+                    chat_log_id=log["id"],
+                    current_level=log.get("level_at_turn", "L1") or "L1",
+                    current_mode=log.get("mode_at_turn", "Conversation") or "Conversation"
                 )
             
             # Refresh data after evaluation updates SQLite database

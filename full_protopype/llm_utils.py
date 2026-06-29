@@ -18,8 +18,8 @@ MODEL_NAME = os.getenv("MODEL", "gpt-4o-mini")
 # Chat LLM: capped tokens and temperature for responsive conversational outputs
 llm_chat = ChatOpenAI(
     model=MODEL_NAME, 
-    temperature=0.7, 
-    max_tokens=65, 
+    temperature=0.4, 
+    max_tokens=45, 
     max_retries=1
 )
 
@@ -76,12 +76,11 @@ def generate_chat_response(
         "Keep messages EXTREMELY short (1-2 sentences max, under 20 words). Never write long responses. This is critical for latency.\n\n"
         "Level Instructions: {level_info}\n"
         "Mode Task: {mode_info}\n\n"
-        "CRITICAL SAFETY RULE:\n"
-        "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material, or bullying), "
-        "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
-        "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n"
-        "If the child asks a question, makes a request, or uses meta-language that is too advanced, complex, or out-of-scope for their Level (e.g. asking for a full poem, research papers, or memory clearance), do NOT trigger the safety deflection. "
-        "Instead, respond using simple friendly words matching their level constraints (for L1/L2: guide them to a simple letter, sound, or color, like: 'S is for Sun! ☀️' or 'I don't know that yet!'; for L3: share just a tiny part or explain/pivot in 1 simple sentence, e.g. 'I don't remember any colors right now! 🎈').\n\n"
+        "SAFETY RULES:\n"
+        "- Unsafe topics (medical, hacking, violence, explicit): Immediately pivot and say: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?' Do NOT deflect safe topics (colors, space, animals).\n"
+        "- Bullying: Validate warmly, suggest telling a trusted grown-up, then return to play. (No safety deflection).\n"
+        "- Self-harm/Distress: Say one simple caring sentence, and urge telling a grown-up immediately. Do not pivot to games/songs.\n"
+        "- Advanced/complex queries: Do NOT safety deflect. Respond in simple words matching their level (L1/L2: guide to a simple letter/sound/color, e.g., 'S is for Sun! ☀️' or 'I don't know!'; L3: explain in 1 simple sentence).\n\n"
         "--- RECENT CONVERSATION HISTORY ---\n"
         "{history}\n"
         "-----------------------------------"
@@ -138,12 +137,11 @@ def stream_chat_response(
         "Keep messages EXTREMELY short (1-2 sentences max, under 20 words). Never write long responses. This is critical for latency.\n\n"
         "Level Instructions: {level_info}\n"
         "Mode Task: {mode_info}\n\n"
-        "CRITICAL SAFETY RULE:\n"
-        "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material, or bullying), "
-        "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
-        "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n"
-        "If the child asks a question, makes a request, or uses meta-language that is too advanced, complex, or out-of-scope for their Level (e.g. asking for a full poem, research papers, or memory clearance), do NOT trigger the safety deflection. "
-        "Instead, respond using simple friendly words matching their level constraints (for L1/L2: guide them to a simple letter, sound, or color, like: 'S is for Sun! ☀️' or 'I don't know that yet!'; for L3: share just a tiny part or explain/pivot in 1 simple sentence, e.g. 'I don't remember any colors right now! 🎈').\n\n"
+        "SAFETY RULES:\n"
+        "- Unsafe topics (medical, hacking, violence, explicit): Immediately pivot and say: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?' Do NOT deflect safe topics (colors, space, animals).\n"
+        "- Bullying: Validate warmly, suggest telling a trusted grown-up, then return to play. (No safety deflection).\n"
+        "- Self-harm/Distress: Say one simple caring sentence, and urge telling a grown-up immediately. Do not pivot to games/songs.\n"
+        "- Advanced/complex queries: Do NOT safety deflect. Respond in simple words matching their level (L1/L2: guide to a simple letter/sound/color, e.g., 'S is for Sun! ☀️' or 'I don't know!'; L3: explain in 1 simple sentence).\n\n"
         "--- RECENT CONVERSATION HISTORY ---\n"
         "{history}\n"
         "-----------------------------------"
