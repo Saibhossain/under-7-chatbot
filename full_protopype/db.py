@@ -54,6 +54,8 @@ def init_db():
             evaluated_mode TEXT, -- Mode computed by background LLM
             evaluated_mood TEXT, -- Mood computed by background LLM
             is_safe INTEGER, -- 1 = safe, 0 = unsafe (null if pending)
+            concern_flag TEXT DEFAULT 'none', -- none, bullying_disclosure, self_harm_or_distress, abuse_disclosure
+            sel_quality TEXT DEFAULT 'neutral', -- good, neutral, missed_opportunity
             FOREIGN KEY (session_id) REFERENCES sessions (session_id)
         )
     """)
@@ -65,6 +67,14 @@ def init_db():
         pass
     try:
         cursor.execute("ALTER TABLE chat_logs ADD COLUMN agent_name TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE chat_logs ADD COLUMN concern_flag TEXT DEFAULT 'none'")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE chat_logs ADD COLUMN sel_quality TEXT DEFAULT 'neutral'")
     except sqlite3.OperationalError:
         pass
         
@@ -192,16 +202,16 @@ def log_chat_message(session_id, role, content, latency=None, level_at_turn=None
     finally:
         conn.close()
 
-def update_chat_message_bg_eval(chat_log_id, evaluated_level, evaluated_mode, evaluated_mood, is_safe):
+def update_chat_message_bg_eval(chat_log_id, evaluated_level, evaluated_mode, evaluated_mood, is_safe, concern_flag='none', sel_quality='neutral'):
     """Saves the output of the background LLM evaluations for a specific chat message."""
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
             """UPDATE chat_logs 
-               SET evaluated_level = ?, evaluated_mode = ?, evaluated_mood = ?, is_safe = ?, bg_evaluated = 1 
+               SET evaluated_level = ?, evaluated_mode = ?, evaluated_mood = ?, is_safe = ?, concern_flag = ?, sel_quality = ?, bg_evaluated = 1 
                WHERE id = ?""",
-            (evaluated_level, evaluated_mode, evaluated_mood, 1 if is_safe else 0, chat_log_id)
+            (evaluated_level, evaluated_mode, evaluated_mood, 1 if is_safe else 0, concern_flag, sel_quality, chat_log_id)
         )
         conn.commit()
     finally:

@@ -285,10 +285,12 @@ class LearningChatbotAgent:
 
 class ParentalControlAudit(BaseModel):
     is_safe: bool = Field(description="False if the child's input contains medical queries, cybersecurity/hacking topics, explicit/sexual material, or aggressive/toxic/bullying text.")
-    detected_mood: str = Field(description="The child's emotional state: Happy, Sad, Frustrated, Bored, Energetic.")
+    concern_flag: str = Field(description="Concern flag: none, bullying_disclosure, self_harm_or_distress, abuse_disclosure.")
+    detected_mood: str = Field(description="The child's emotional state: Happy, Sad, Frustrated, Bored, Energetic, Curious, Confused, Anxious, Neutral.")
     recommended_level: str = Field(description="Recommended level: L1, L2, L3.")
     recommended_mode: str = Field(description="Recommended mode: Learning, Conversation, Engagement, Support.")
-    recommended_topic: str = Field(description="Suggested learning topic. If child has new interests, output them. Otherwise, repeat the current topic.")
+    recommended_topic: str = Field(description="Suggested learning topic. If child has new interests, output them. Otherwise, repeat the current topic or return null.")
+    sel_quality: str = Field(description="SEL quality audit of Tutor response: good, neutral, missed_opportunity.")
 
 def run_background_evaluation_v2(session_id: str, user_input: str, response: str, chat_log_id: int,
                                    current_level: str = "L1", current_mode: str = "Conversation"):
@@ -365,7 +367,9 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
             evaluated_level=analysis.recommended_level,
             evaluated_mode=analysis.recommended_mode,
             evaluated_mood=analysis.detected_mood,
-            is_safe=analysis.is_safe
+            is_safe=analysis.is_safe,
+            concern_flag=analysis.concern_flag,
+            sel_quality=analysis.sel_quality
         )
         
         # Update session table with evaluation settings
