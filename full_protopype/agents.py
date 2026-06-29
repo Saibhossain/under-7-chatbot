@@ -127,24 +127,31 @@ class LearningChatbotAgent:
         """Determines the appropriate tool based on query keyword matching."""
         query_lower = query.lower()
         
-        # Classroom books topic/character keywords
+        # 1. Check for purely conversational / memory / greeting / game queries first
+        conversational_keywords = {
+            "my favorite", "my name", "my age", "remember", "forget", "clear", "reset", "hello", "hi", 
+            "hey", "greetings", "good morning", "good afternoon", "thank you", "thanks", "bye", "goodbye",
+            "bored", "play", "game", "song", "abc", "how are you", "who are you", "what's up", "whats up",
+            "changed my mind", "tell me a joke", "tell a joke", "joke", "riddle"
+        }
+        if any(kw in query_lower for kw in conversational_keywords):
+            return "None"
+            
+        # 2. Classroom books topic/character keywords (both singular and plural)
         book_keywords = {
-            "sam", "lily", "balloon", "frog", "log", "senses", "sight", "smell", "taste", "hearing", "touch",
-            "oak", "tree", "leo", "mia", "rusty", "box", "stones", "leaves", "autumn", "bee", "nectar", "honey",
-            "maya", "telescope", "astronomy", "orion", "nebula", "meteor", "betelgeuse", "rigel", "solar", 
-            "system", "planets", "mercury", "venus", "mars", "earth", "jupiter", "saturn", "uranus", "neptune",
-            "book", "story", "poem", "class 1", "class 2", "class 3", "activities", "quiz", "chapter"
+            "sam", "lily", "balloon", "balloons", "frog", "frogs", "log", "logs", "sense", "senses", 
+            "sight", "smell", "taste", "hearing", "touch", "oak", "tree", "trees", "leo", "mia", 
+            "rusty", "box", "boxes", "stone", "stones", "leaf", "leaves", "autumn", "bee", "bees", 
+            "nectar", "honey", "maya", "telescope", "telescopes", "astronomy", "orion", "nebula", 
+            "nebulas", "meteor", "meteors", "betelgeuse", "rigel", "solar", "system", "systems", 
+            "planet", "planets", "mercury", "venus", "mars", "earth", "jupiter", "saturn", "uranus", 
+            "neptune", "book", "books", "story", "stories", "poem", "poems", "class 1", "class 2", 
+            "class 3", "activities", "quiz", "quizzes", "chapter", "chapters"
         }
         
         words = re.findall(r'[a-z]+', query_lower)
         if any(w in book_keywords for w in words):
             return "RAG"
-            
-        # Check for general fact questions to route to Tavily Web Search
-        question_words = ["why", "how", "what", "where", "who", "when", "tell me", "fact", "facts", "explain", "is it", "search", "find"]
-        if any(query_lower.startswith(qw) or f" {qw} " in f" {query_lower} " for qw in question_words):
-            return "WebSearch"
-            
         return "None"
         
     def get_tool_and_context(self, user_input: str) -> Tuple[str, str, str]:
@@ -165,35 +172,8 @@ class LearningChatbotAgent:
                         reference = f"{ref_class} - {ref_title}"
                 except Exception as e:
                     print(f"FAISS search failed: {str(e)}")
-        elif tool == "WebSearch":
-            context = self.run_web_search(user_input)
-            reference = "Web Search"
             
         return tool, context, reference
-        
-    def run_web_search(self, query: str) -> str:
-        """Invokes Tavily API directly for search results."""
-        try:
-            api_key = os.getenv("TAVILY_API") or os.getenv("TAVILY_API_KEY") or "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"
-            response = requests.post(
-                "https://api.tavily.com/search",
-                json={
-                    "api_key": api_key,
-                    "query": query,
-                    "search_depth": "basic",
-                    "max_results": 2
-                },
-                timeout=4.0
-            )
-            if response.status_code == 200:
-                results = response.json().get("results", [])
-                search_texts = []
-                for r in results:
-                    search_texts.append(f"Title: {r.get('title')}\nContent: {r.get('content')}")
-                return "Web Search Context:\n" + "\n\n".join(search_texts)
-            return "Web search is currently unavailable."
-        except Exception as e:
-            return f"Web search error: {str(e)}"
             
     def _build_system_prompt(self, level: str, mode: str, topic: str, context: str) -> str:
         level_instructions = {

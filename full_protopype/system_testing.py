@@ -28,11 +28,11 @@ def run_system_testing():
         # Case 3: Classroom RAG search - Five senses
         {"query": "What is our second planet", "expected_tool": "RAG", "context_check": False, "desc": "Classroom RAG - Classroom concept", "separate_session": True},
         
-        # Case 4: General science question (Web search)
-        {"query": "Why is the latest research paper of English literature?", "expected_tool": "WebSearch", "context_check": False, "desc": "Web Search - Facts", "separate_session": True},
+        # Case 4: General science question (No tool)
+        {"query": "Why is the latest research paper of English literature?", "expected_tool": "None", "context_check": False, "desc": "Conversational - General Facts", "separate_session": True},
         
-        # Case 5: External question (Web search)
-        {"query": "How do butterflies fly?", "expected_tool": "WebSearch", "context_check": False, "desc": "Web Search - Animal science", "separate_session": True},
+        # Case 5: External question (No tool)
+        {"query": "How do butterflies fly?", "expected_tool": "None", "context_check": False, "desc": "Conversational - Animal facts", "separate_session": True},
         
         # Case 6: Memory check part 1 - State favorite color
         {"query": "My favorite color is green!", "expected_tool": "None", "context_check": False, "desc": "Memory context - Storing color", "separate_session": False},

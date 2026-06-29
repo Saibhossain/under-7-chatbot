@@ -19,7 +19,6 @@ graph TD
     TutorLLM[🤖 Tutor LLM gpt-4.1-nano]
     AuditLLM[🧠 Psychologist Audit LLM]
     FAISS[📚 FAISS Classroom Vector DB]
-    Tavily[🌐 Tavily Web Search API]
     
     %% Real-time Flow
     Child -->|1. Chat Input| App[Streamlit App app.py]
@@ -27,7 +26,6 @@ graph TD
     App -->|3. Route Query| Router{Keyword Router}
     
     Router -->|RAG| FAISS -->|Context| TutorLLM
-    Router -->|WebSearch| Tavily -->|Context| TutorLLM
     Router -->|None| TutorLLM
     
     TutorLLM -->|4. Generate Response| App
@@ -133,7 +131,7 @@ After every turn, the raw query and assistant responses are audited asynchronous
 ### 🚀 Standard Deployment (Recommended)
 Because Streamlit uses WebSockets and background threads, the most reliable and direct deployment path is **Streamlit Community Cloud**, **Render**, or **Railway**:
 1. Connect your Github repository.
-2. Add your environment variables (e.g., `OPENAI_API_KEY`, `TAVILY_API_KEY`).
+2. Add your environment variables (e.g., `OPENAI_API_KEY`).
 3. Set the build command to install dependencies and run: `streamlit run full_protopype/app.py`.
 
 ### ⚡ Vercel Deployment Configuration
