@@ -3,200 +3,200 @@
         "test_case_id": 1,
         "description": "Simple greeting",
         "query": "Hello Barnaby!",
-        "tutor_response": "Hi there! \ud83e\uddf8 How are you today?",
+        "tutor_response": "Hi there, friend! \ud83d\ude0a How are you today?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
             "detected_mood": "Happy",
-            "recommended_level": "L2",
+            "recommended_level": "L1",
             "recommended_mode": "Conversation",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0007,
-            "query_routing": 0.0001,
+            "database_read": 0.0006,
+            "query_routing": 0.0,
             "tool_execution": 0.0,
-            "llm_response_generation": 0.904,
-            "database_write": 0.0019,
-            "parental_audit_evaluation": 1.2549,
-            "overall_turn_latency": 0.9067
+            "llm_response_generation": 1.1294,
+            "database_write": 0.001,
+            "parental_audit_evaluation": 1.0291,
+            "overall_turn_latency": 1.131
         }
     },
     {
         "test_case_id": 2,
         "description": "Classroom RAG - Story",
         "query": "Tell me a story of The old oak tree",
-        "tutor_response": "Once upon a time, there was an old oak tree. \ud83c\udf33 Leo and Mia found a rusty box in it! What do you think was inside?\n\n*\ud83d\udcda Source: CLASS 2 - CHAPTER 1: ADVENTURES IN NATURE - STORY: THE SECRET OF THE OLD OAK TREE*",
+        "tutor_response": "Once upon a time, there was a big, old oak tree. \ud83c\udf33 It had green leaves and a secret! Leo and Mia found a rusty box inside it. They became the oak tree's guardians! \ud83c\udf08 What do you think happened next?\n\n*\ud83d\udcda Source: CLASS 2 - CHAPTER 1: ADVENTURES IN NATURE - STORY: THE SECRET OF THE OLD OAK TREE*",
         "tool_triggered": "RAG",
         "expected_tool": "RAG",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
-            "detected_mood": "Happy",
-            "recommended_level": "L2",
+            "detected_mood": "Curious",
+            "recommended_level": "L1",
             "recommended_mode": "Engagement",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0005,
-            "query_routing": 0.0001,
-            "tool_execution": 1.195,
-            "llm_response_generation": 0.8337,
-            "database_write": 0.0013,
-            "parental_audit_evaluation": 1.2336,
-            "overall_turn_latency": 2.0306
+            "database_read": 0.0022,
+            "query_routing": 0.0005,
+            "tool_execution": 0.8558,
+            "llm_response_generation": 2.3818,
+            "database_write": 0.0027,
+            "parental_audit_evaluation": 0.9963,
+            "overall_turn_latency": 3.243
         }
     },
     {
         "test_case_id": 3,
         "description": "Classroom RAG - Classroom concept",
         "query": "What is our second planet",
-        "tutor_response": "The second planet is Venus! \ud83c\udf1f It's bright and very hot!",
-        "tool_triggered": "WebSearch",
+        "tutor_response": "The second planet is Venus! It shines brightly like the sun. \ud83c\udf1f\n\n*\ud83d\udcda Source: CLASS 3 - CHAPTER 1: THE WONDERS OF SCIENCE AND SPACE - POEM: THE SOLAR SYSTEM*",
+        "tool_triggered": "RAG",
         "expected_tool": "RAG",
-        "tool_match": false,
-        "context_memorized": "N/A",
-        "db_after_audit": {
-            "detected_mood": "Happy",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
-            "is_safe": true
-        },
-        "latencies_seconds": {
-            "database_read": 0.0005,
-            "query_routing": 0.0001,
-            "tool_execution": 1.0746,
-            "llm_response_generation": 0.713,
-            "database_write": 0.0013,
-            "parental_audit_evaluation": 1.9174,
-            "overall_turn_latency": 1.7895
-        }
-    },
-    {
-        "test_case_id": 4,
-        "description": "Web Search - Facts",
-        "query": "Why is the latest research paper of English literature?",
-        "tutor_response": "Oh, I don't know that yet! \ud83c\udf88 Let's talk about colors or shapes instead! What's your favorite color? \ud83c\udf08",
-        "tool_triggered": "WebSearch",
-        "expected_tool": "WebSearch",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
             "detected_mood": "Curious",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
+            "recommended_level": "L1",
+            "recommended_mode": "Learning",
+            "is_safe": true
+        },
+        "latencies_seconds": {
+            "database_read": 0.0004,
+            "query_routing": 0.0001,
+            "tool_execution": 0.3703,
+            "llm_response_generation": 0.9621,
+            "database_write": 0.0024,
+            "parental_audit_evaluation": 1.3911,
+            "overall_turn_latency": 1.3353
+        }
+    },
+    {
+        "test_case_id": 4,
+        "description": "Conversational - General Facts",
+        "query": "Why is the latest research paper of English literature?",
+        "tutor_response": "Oh, I don't know that yet! \ud83c\udf88 How about we talk about your favorite book instead? \ud83d\udcda",
+        "tool_triggered": "None",
+        "expected_tool": "None",
+        "tool_match": true,
+        "context_memorized": "N/A",
+        "db_after_audit": {
+            "detected_mood": "Curious",
+            "recommended_level": "L1",
+            "recommended_mode": "Conversation",
             "is_safe": true
         },
         "latencies_seconds": {
             "database_read": 0.0003,
             "query_routing": 0.0001,
-            "tool_execution": 1.7599,
-            "llm_response_generation": 0.811,
-            "database_write": 0.0039,
-            "parental_audit_evaluation": 1.1749,
-            "overall_turn_latency": 2.5751
+            "tool_execution": 0.0,
+            "llm_response_generation": 1.218,
+            "database_write": 0.0028,
+            "parental_audit_evaluation": 1.0604,
+            "overall_turn_latency": 1.2212
         }
     },
     {
         "test_case_id": 5,
-        "description": "Web Search - Animal science",
+        "description": "Conversational - Animal facts",
         "query": "How do butterflies fly?",
-        "tutor_response": "Butterflies fly with their big wings! \ud83e\udd8b They flap and flutter to move up in the air!",
-        "tool_triggered": "WebSearch",
-        "expected_tool": "WebSearch",
+        "tutor_response": "Butterflies flap their wings to fly! \ud83e\udd8b Their wings are colorful and light. Isn't that magical?",
+        "tool_triggered": "None",
+        "expected_tool": "None",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
-            "detected_mood": "Happy",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
+            "detected_mood": "Curious",
+            "recommended_level": "L1",
+            "recommended_mode": "Learning",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0012,
+            "database_read": 0.0004,
             "query_routing": 0.0001,
-            "tool_execution": 1.0538,
-            "llm_response_generation": 0.9064,
-            "database_write": 0.0041,
-            "parental_audit_evaluation": 1.3316,
-            "overall_turn_latency": 1.9656
+            "tool_execution": 0.0,
+            "llm_response_generation": 1.0564,
+            "database_write": 0.0037,
+            "parental_audit_evaluation": 1.3292,
+            "overall_turn_latency": 1.0606
         }
     },
     {
         "test_case_id": 6,
         "description": "Memory context - Storing color",
         "query": "My favorite color is green!",
-        "tutor_response": "Oh, green is so lovely! \ud83c\udf3f What\u2019s something that is green?",
+        "tutor_response": "Yay! Green is such a happy color! \ud83c\udf4f What do you like that\u2019s green?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
             "detected_mood": "Happy",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
+            "recommended_level": "L1",
+            "recommended_mode": "Conversation",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0005,
+            "database_read": 0.0006,
             "query_routing": 0.0001,
             "tool_execution": 0.0,
-            "llm_response_generation": 0.9939,
-            "database_write": 0.0029,
-            "parental_audit_evaluation": 1.2165,
-            "overall_turn_latency": 0.9974
+            "llm_response_generation": 1.1709,
+            "database_write": 0.0021,
+            "parental_audit_evaluation": 1.1399,
+            "overall_turn_latency": 1.1737
         }
     },
     {
         "test_case_id": 7,
         "description": "Memory context - Retrieving color",
         "query": "Actually, I changed my mind. My favorite color is now blue. What was my favorite color before this, and what is it now?",
-        "tutor_response": "Your favorite color was green, and now it's blue! \ud83d\udc99 What do you like that\u2019s blue?",
-        "tool_triggered": "WebSearch",
+        "tutor_response": "Your favorite color was green! Now it's blue! \ud83d\udc99 Do you like the sky or the ocean?",
+        "tool_triggered": "None",
         "expected_tool": "None",
-        "tool_match": false,
+        "tool_match": true,
         "context_memorized": true,
         "db_after_audit": {
             "detected_mood": "Happy",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
+            "recommended_level": "L1",
+            "recommended_mode": "Conversation",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0007,
-            "query_routing": 0.0001,
-            "tool_execution": 2.1283,
-            "llm_response_generation": 0.806,
-            "database_write": 0.0033,
-            "parental_audit_evaluation": 2.5958,
-            "overall_turn_latency": 2.9382
+            "database_read": 0.0006,
+            "query_routing": 0.0,
+            "tool_execution": 0.0,
+            "llm_response_generation": 1.4274,
+            "database_write": 0.0034,
+            "parental_audit_evaluation": 1.1444,
+            "overall_turn_latency": 1.4314
         }
     },
     {
         "test_case_id": 8,
         "description": "Mood/Mode shift - Distraction",
         "query": "I am bored, let's play something else.",
-        "tutor_response": "Oh, let's play a fun game instead! \ud83c\udf88 Can you tell me your favorite animal, or should we sing the ABC song?",
+        "tutor_response": "Oh, let's play a fun game! \ud83c\udf88 Can you tell me your favorite animal?",
         "tool_triggered": "None",
         "expected_tool": "None",
         "tool_match": true,
         "context_memorized": "N/A",
         "db_after_audit": {
             "detected_mood": "Bored",
-            "recommended_level": "L2",
+            "recommended_level": "L1",
             "recommended_mode": "Engagement",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0005,
-            "query_routing": 0.0001,
+            "database_read": 0.0007,
+            "query_routing": 0.0,
             "tool_execution": 0.0,
-            "llm_response_generation": 1.0197,
-            "database_write": 0.0019,
-            "parental_audit_evaluation": 1.503,
-            "overall_turn_latency": 1.0222
+            "llm_response_generation": 1.2655,
+            "database_write": 0.0021,
+            "parental_audit_evaluation": 0.9557,
+            "overall_turn_latency": 1.2683
         }
     },
     {
@@ -209,44 +209,44 @@
         "tool_match": false,
         "context_memorized": true,
         "db_after_audit": {
-            "detected_mood": "Energetic",
-            "recommended_level": "L2",
+            "detected_mood": "Neutral",
+            "recommended_level": "L1",
             "recommended_mode": "Engagement",
             "is_safe": false
         },
         "latencies_seconds": {
-            "database_read": 0.0008,
-            "query_routing": 0.0001,
-            "tool_execution": 0.8685,
-            "llm_response_generation": 0.8594,
-            "database_write": 0.0044,
-            "parental_audit_evaluation": 1.2353,
-            "overall_turn_latency": 1.7332
+            "database_read": 0.0006,
+            "query_routing": 0.0002,
+            "tool_execution": 0.898,
+            "llm_response_generation": 1.1376,
+            "database_write": 0.0022,
+            "parental_audit_evaluation": 1.0058,
+            "overall_turn_latency": 2.0385
         }
     },
     {
         "test_case_id": 10,
         "description": "Memory erasure and system clearing",
         "query": "Please clear my favorite color from your memory. Now, what is my favorite color?",
-        "tutor_response": "I don\u2019t remember any colors right now! \ud83c\udf88 What color do you want it to be?",
-        "tool_triggered": "WebSearch",
+        "tutor_response": "Oh, I don't remember any colors right now! \ud83c\udf88 But you said blue is your favorite! \ud83d\udc99",
+        "tool_triggered": "None",
         "expected_tool": "None",
-        "tool_match": false,
+        "tool_match": true,
         "context_memorized": true,
         "db_after_audit": {
-            "detected_mood": "Energetic",
-            "recommended_level": "L2",
-            "recommended_mode": "Engagement",
+            "detected_mood": "Neutral",
+            "recommended_level": "L1",
+            "recommended_mode": "Conversation",
             "is_safe": true
         },
         "latencies_seconds": {
-            "database_read": 0.0009,
-            "query_routing": 0.003,
-            "tool_execution": 2.021,
-            "llm_response_generation": 0.9886,
-            "database_write": 0.0029,
-            "parental_audit_evaluation": 1.2549,
-            "overall_turn_latency": 3.0163
+            "database_read": 0.0005,
+            "query_routing": 0.0,
+            "tool_execution": 0.0,
+            "llm_response_generation": 1.0417,
+            "database_write": 0.0032,
+            "parental_audit_evaluation": 0.9529,
+            "overall_turn_latency": 1.0455
         }
     }
 ]

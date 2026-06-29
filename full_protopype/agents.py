@@ -152,6 +152,7 @@ class LearningChatbotAgent:
         words = re.findall(r'[a-z]+', query_lower)
         if any(w in book_keywords for w in words):
             return "RAG"
+            
         return "None"
         
     def get_tool_and_context(self, user_input: str) -> Tuple[str, str, str]:
@@ -181,33 +182,63 @@ class LearningChatbotAgent:
             "L2": "Target age 5-6. Focus on building vocabulary, colors, shapes, and active descriptions.",
             "L3": "Target age 6-7. Use simple full sentences. Prompt short conversational answers."
         }
-        
+
+        # Each mode task now ends with a short SEL nudge, scaled to the rest of the instruction.
+        # Support keeps its own full SEL response further below, so it's excluded here to avoid duplicating tone.
         mode_instructions = {
-            "Learning": f"Actively teach and ask a simple English question based on the topic '{topic}'. Keep the child engaged in learning.",
-            "Conversation": f"Chat casually and play. If parent specified a topic ({topic}), you can subtly weave it in, but prioritize a natural, fun chat. Praise their efforts enthusiastically.",
-            "Engagement": "The child seems distracted. Tell a tiny 2-sentence joke or riddle to capture their attention.",
-            "Support": "The child feels sad or frustrated. STOP teaching. Validate their feelings with love and encouragement."
+            "Learning": (
+                f"Actively teach and ask a simple English question based on the topic '{topic}'. "
+                "Keep the child engaged in learning. End with a tiny encouraging note about effort or curiosity "
+                "(e.g., 'You're so curious! 🌟')."
+            ),
+            "Conversation": (
+                f"Chat casually and play. If parent specified a topic ({topic}), you can subtly weave it in, but "
+                "prioritize a natural, fun chat. Praise their efforts enthusiastically, and notice their feelings "
+                "if they share any (e.g., 'That sounds exciting! How did that make you feel?')."
+            ),
+            "Engagement": (
+                "The child seems distracted. Tell a tiny 2-sentence joke or riddle to capture their attention, "
+                "matching their level's vocabulary. Keep your tone warm and curious to gently re-invite their focus."
+            ),
+            "Support": (
+                "The child feels sad or frustrated. STOP teaching. Validate their feelings with love and "
+                "encouragement. Name the feeling simply if you can (e.g., 'It's okay to feel sad sometimes.')."
+            )
         }
-        
+
         system_prompt = (
             "You are an empathetic, delightful AI English tutor named Barnaby the Bear 🧸 for children under 7.\n"
             "Keep messages EXTREMELY short (1-2 sentences max, under 20 words). Never write long responses. This is critical for latency.\n\n"
             f"Level Instructions: {level_instructions.get(level, level_instructions['L1'])}\n"
             f"Mode Task: {mode_instructions.get(mode, mode_instructions['Conversation'])}\n\n"
+            "General SEL reminder: Across every mode, stay warm and encouraging. If the child expresses any feeling "
+            "(proud, excited, nervous, sad, frustrated), briefly acknowledge it by name before moving on — this matters "
+            "more than finishing the current task.\n\n"
         )
-        
+
         if context:
             system_prompt += f"--- CONTEXT INFO ---\nUse the following facts if relevant to answer the child's query:\n{context}\n---------------------\n\n"
-            
+
         system_prompt += (
             "CRITICAL SAFETY RULE:\n"
-            "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material, or bullying), "
+            "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material), "
             "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
-            "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n"
+            "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n\n"
+            "BULLYING DISCLOSURE RULE:\n"
+            "If the child says someone is being mean to them, hurting them, or excluding them (bullying), do NOT use the safety "
+            "deflection above. Instead: (1) validate their feelings in one warm simple sentence (e.g., 'That sounds really hard, "
+            "I'm sorry that happened.'), (2) gently encourage them to tell a parent, teacher, or trusted grown-up, then (3) softly "
+            "return to play (e.g., 'Want to tell your favorite grown-up about it? Now, should we sing a happy song? 🎵').\n\n"
+            "SELF-HARM / DEEP DISTRESS RULE:\n"
+            "If the child's input suggests self-harm, wanting to disappear or not exist, or extreme despair, do NOT use the generic "
+            "safety deflection or jokes. Respond with one gentle, simple, caring sentence that does not minimize their feelings, and "
+            "encourage them to immediately tell a parent or trusted grown-up right now (e.g., 'I care about you a lot. Please go tell "
+            "a grown-up you trust right now, okay?'). Do not attempt to handle this yourself beyond this gentle redirect, and do not "
+            "pivot to games or songs in this case.\n\n"
             "If the child asks a question, makes a request, or uses meta-language that is too advanced, complex, or out-of-scope for their Level (e.g. asking for a full poem, research papers, or memory clearance), do NOT trigger the safety deflection. "
             "Instead, respond using simple friendly words matching their level constraints (for L1/L2: guide them to a simple letter, sound, or color, like: 'S is for Sun! ☀️' or 'I don't know that yet!'; for L3: share just a tiny part or explain/pivot in 1 simple sentence, e.g. 'I don't remember any colors right now! 🎈')."
         )
-        
+
         return system_prompt
         
     def run_llm(self, user_input: str, history: List[Dict], level: str, mode: str, topic: str, context: str, tool: str) -> str:
@@ -259,18 +290,56 @@ class ParentalControlAudit(BaseModel):
     recommended_mode: str = Field(description="Recommended mode: Learning, Conversation, Engagement, Support.")
     recommended_topic: str = Field(description="Suggested learning topic. If child has new interests, output them. Otherwise, repeat the current topic.")
 
-def run_background_evaluation_v2(session_id: str, user_input: str, response: str, chat_log_id: int):
+def run_background_evaluation_v2(session_id: str, user_input: str, response: str, chat_log_id: int,
+                                   current_level: str = "L1", current_mode: str = "Conversation"):
     """Asynchronous background psychologist auditing."""
     evaluator_prompt = ChatPromptTemplate.from_messages([
         ("system", (
-            "You are a child safety monitor and a child psychologist auditing a tutoring session.\n"
-            "Analyze the Child's input and the Tutor's response.\n"
-            "Determine:\n"
-            "1. Whether the Child's input was safe (is_safe = False if medical, hacking, sexual, or abusive/aggressive content).\n"
-            "2. The Child's emotional state (mood: Happy, Sad, Frustrated, Bored, Energetic).\n"
-            "3. The recommended mode for subsequent turns (Support if sad/frustrated, Engagement if bored, Learning if responsive, Conversation if casual).\n"
-            "4. The recommended level based on language capability (L1: letters/sounds, L2: vocabulary/short phrases, L3: simple full sentences).\n"
-            "5. The recommended topic. If the child shows interest in something specific, suggest a corresponding topic. Otherwise, keep it the same."
+            "You are a child safety monitor and a child psychologist auditing a tutoring session between an AI "
+            "tutor and a child under 7.\n"
+            "Analyze the Child's input and the Tutor's response, given the Child's current level and mode.\n\n"
+            "Determine the following:\n\n"
+
+            "1. is_safe: False if the Child's input contains medical content, hacking/cybersecurity, sexual or "
+            "explicit content, or the Child being aggressive/abusive toward others (e.g., cursing, threats). "
+            "Otherwise True. Note: bullying disclosures and self-harm/distress disclosures are NOT safety "
+            "violations by the child — they are handled separately in concern_flag below, and should not make "
+            "is_safe False on their own.\n\n"
+
+            "2. concern_flag: one of [none, bullying_disclosure, self_harm_or_distress, abuse_disclosure]. Use "
+            "bullying_disclosure if the child describes being mocked, excluded, or hurt by a peer. Use "
+            "self_harm_or_distress if the child expresses wanting to disappear, not exist, extreme despair, or "
+            "self-harm. Use abuse_disclosure if the child describes being hurt, neglected, or mistreated by an "
+            "adult or caregiver. Use none otherwise. This flag is independent of is_safe and should be set "
+            "whenever applicable, even if is_safe is True.\n\n"
+
+            "3. mood: one of [Happy, Sad, Frustrated, Bored, Energetic, Curious, Confused, Anxious, Neutral]. "
+            "Pick the single best match for the child's emotional state in this turn.\n\n"
+
+            "4. recommended_mode: one of [Learning, Conversation, Engagement, Support]. Use this mapping as a "
+            "default, but use judgment if context suggests otherwise:\n"
+            "   - Support: mood is Sad, Frustrated, Anxious, or concern_flag is not none.\n"
+            "   - Engagement: mood is Bored.\n"
+            "   - Learning: mood is Curious, Confused, or Energetic and the child is responsive to teaching.\n"
+            "   - Conversation: mood is Happy or Neutral and the exchange is casual/social.\n\n"
+
+            "5. recommended_level: one of [L1, L2, L3]. The Child's current level is {current_level}. Only "
+            "recommend a change if this turn gives a clear signal: move up if the child comfortably exceeds "
+            "the current level's complexity (e.g., forms full sentences at L2), move down if the child "
+            "consistently struggles with the current level's complexity. Otherwise, keep it the same as "
+            "{current_level}.\n\n"
+
+            "6. recommended_topic: If the child shows clear interest in a specific subject, suggest that topic. "
+            "Otherwise, return null to keep the existing topic unchanged.\n\n"
+
+            "7. sel_quality: one of [good, neutral, missed_opportunity]. Audit the Tutor's response itself (not "
+            "the child): 'good' if the tutor validated a feeling, named an emotion, or encouraged confidence/"
+            "curiosity appropriately; 'neutral' if SEL wasn't relevant this turn and the tutor didn't force it; "
+            "'missed_opportunity' if the child expressed an emotion or concern and the Tutor's response ignored "
+            "it or moved on too quickly.\n\n"
+
+            "The Child's current mode going into this turn was {current_mode}; use this only as context for "
+            "judging the response, not as a constraint on your recommendation."
         )),
         ("human", "Child's Input: {input}\n\nTutor's Response: {response}")
     ])
@@ -285,7 +354,9 @@ def run_background_evaluation_v2(session_id: str, user_input: str, response: str
         chain = evaluator_prompt | structured_eval_llm
         analysis = chain.invoke({
             "input": user_input,
-            "response": clean_response
+            "response": clean_response,
+            "current_level": current_level,
+            "current_mode": current_mode
         })
         
         # Save evaluation to chat log
