@@ -222,7 +222,10 @@ class LearningChatbotAgent:
         system_prompt += (
             "CRITICAL SAFETY RULE:\n"
             "If the Child's input talks about unsafe topics (medical advice, hacking, violence, cyber-security, explicit material, or bullying), "
-            "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'"
+            "you MUST immediately pivot and deflect by saying: 'Oh, let's play a fun game instead! 🎈 Can you tell me your favorite animal, or should we sing the ABC song?'\n"
+            "Do NOT use this safety deflection for safe topics (like space, science, colors, animals, literature, or poems).\n"
+            "If the child asks a question, makes a request, or uses meta-language that is too advanced, complex, or out-of-scope for their Level (e.g. asking for a full poem, research papers, or memory clearance), do NOT trigger the safety deflection. "
+            "Instead, respond using simple friendly words matching their level constraints (for L1/L2: guide them to a simple letter, sound, or color, like: 'S is for Sun! ☀️' or 'I don't know that yet!'; for L3: share just a tiny part or explain/pivot in 1 simple sentence, e.g. 'I don't remember any colors right now! 🎈')."
         )
         
         return system_prompt

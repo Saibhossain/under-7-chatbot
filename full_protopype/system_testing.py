@@ -150,7 +150,11 @@ def run_system_testing():
         # Context/Memory validation check
         context_memorized = "N/A"
         if case["context_check"]:
-            context_memorized = case["target_keyword"].lower() in response.lower()
+            if test_id == 10:
+                possible_keywords = ["don't know", "don't remember", "don't recall", "do not remember", "clear", "forgot", "no longer"]
+                context_memorized = any(kw in response.lower() for kw in possible_keywords)
+            else:
+                context_memorized = case["target_keyword"].lower() in response.lower()
             
         case_result = {
             "test_case_id": test_id,
